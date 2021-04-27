@@ -12,7 +12,8 @@ def processjson():
     className = request.args.get('className')
     generateTest = request.args.get('generateTest')
     auraEnabled = request.args.get('auraEnabled')
-    convertedContent = json2apex(className, generateTest, jsonContent, auraEnabled)
+    parseMethod = request.args.get('parseMethod')
+    convertedContent = json2apex(className, generateTest, jsonContent, auraEnabled, parseMethod)
     return convertedContent
     request.close()
 

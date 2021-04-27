@@ -8,7 +8,7 @@ class_definitions = []
 class_props = {}
 
 
-def json2apex(className, generateTest, jsonContent, auraEnabled):
+def json2apex(className, generateTest, jsonContent, auraEnabled, parseMethod):
     clearDefinitions()
     if generateTest == 'true':
         generateTest = True
@@ -18,8 +18,13 @@ def json2apex(className, generateTest, jsonContent, auraEnabled):
         generateTest = False
     if auraEnabled == 'false':
         auraEnabled = False
-    jsonContent = json.dumps(jsonContent)
-    return main(jsonContent, className, generateTest, 3, auraEnabled)
+    if parseMethod == 'false':
+        parseMethod = False
+    if parseMethod == 'true':
+        parseMethod = True
+
+    jsonContent = json.loads(jsonContent)
+    return main(jsonContent, className, generateTest, 3, auraEnabled, parseMethod)
 
 
 def writeable_dir(prospective_dir):
@@ -130,7 +135,7 @@ def clearDefinitions():
     class_props = {}
 
 
-def main(input_json, class_name, generate_test, indent_spaces, auraEnabled):
+def main(input_json, class_name, generate_test, indent_spaces, auraEnabled, parseMethod):
     clearDefinitions()
     json_dict = json.loads(input_json)
     class_definitions.append(class_name)
@@ -147,9 +152,10 @@ def main(input_json, class_name, generate_test, indent_spaces, auraEnabled):
         out = write_class_open(out, cls, indent_spaces)
         sorted_props = sorted(class_props[cls].items(), key=itemgetter(0))
         out = write_class_props(out, sorted_props, indent_spaces * 2, auraEnabled)
-        out = write_parse_method(out, class_name, indent_spaces)
         out = write_class_close(out, indent_spaces)
-
+    if parseMethod:
+        out = write_parse_method(out, class_name, indent_spaces)
+    out = write_class_close(out, indent_spaces)
     wrapper_class_content = out
     test_class_content = ''
 
