@@ -10,6 +10,14 @@ class_props = {}
 
 def json2apex(className, generateTest, jsonContent, auraEnabled):
     clearDefinitions()
+    if generateTest == 'true':
+        generateTest = True
+    if auraEnabled == 'true':
+        auraEnabled = True
+    if generateTest == 'false':
+        generateTest = False
+    if auraEnabled == 'false':
+        auraEnabled = False
     jsonContent = json.dumps(jsonContent)
     return main(jsonContent, className, generateTest, 3, auraEnabled)
 
@@ -91,6 +99,14 @@ def write_class_props(out, props, num_spaces, auraEnabled):
     return out
 
 
+def write_parse_method(out, cls, num_spaces):
+    indent = ' ' * num_spaces
+    out += '{0}public static {1} parse(String json) {{{2}'.format(indent, cls, linesep)
+    out += '{0}return ({1})System.JSON.deserialize(json, {2}.class);{3}'.format(indent * 2, cls, cls, linesep)
+    out += '{0}}}{1}'.format(indent, linesep)
+    return out
+
+
 def write_test_class(out, cls, json_dict, num_spaces):
     indent = ' ' * num_spaces
     json_str = json.dumps(json_dict, indent=' ' * num_spaces)
@@ -131,17 +147,21 @@ def main(input_json, class_name, generate_test, indent_spaces, auraEnabled):
         out = write_class_open(out, cls, indent_spaces)
         sorted_props = sorted(class_props[cls].items(), key=itemgetter(0))
         out = write_class_props(out, sorted_props, indent_spaces * 2, auraEnabled)
+        out = write_parse_method(out, class_name, indent_spaces)
         out = write_class_close(out, indent_spaces)
 
     wrapper_class_content = out
+    test_class_content = ''
 
     if generate_test:
         test_out = ''
         test_out = write_test_class(test_out, class_name, json_dict, indent_spaces)
         test_class_content = test_out
-
-    results = get_results(wrapper_class_content, test_class_content)
-    return {"testClass": results.test, "wrapperClass": results.wrapper}
+        results = get_results(wrapper_class_content, test_class_content)
+        return {"testClass": results.test, "wrapperClass": results.wrapper}
+    else:
+        results = get_results(wrapper_class_content, test_class_content)
+        return {"wrapperClass": results.wrapper}
 
 
 def get_results(wrapper, test):

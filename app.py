@@ -5,11 +5,6 @@ import os
 app = Flask(__name__)
 
 
-@app.route("/hello")
-def hello():
-    return jsonify(message='Hello from path!')
-
-
 @app.route("/json2apex", methods=["POST"])
 def processjson():
     body = request.get_json()
